@@ -11,30 +11,6 @@ This project goal is to get an LLM to follow instructions from this data via pro
 
 ---
 
-## Project Structure
-```
-Project_3/
-├── data/
-│   ├── clean_dolly_train.json          # Training split (JSONL)
-│   └── clean_dolly_test.json           # Test split (JSONL)
-├── model/
-│   ├── opt_model/                      # OPT-1.3B LoRA adapter
-│   │   ├── adapter_model.safetensors
-│   │   └── adapter_config.json
-│   └── opt-1.3b-base/                 # OPT-1.3B base model (see setup)
-├── notebooks/
-│   ├── data_cleaning.ipynb             # Data preprocessing & cleaning
-│   ├── deepseek_eval.ipynb             # DeepSeek zero-shot & few-shot evaluation
-│   ├── tinyllama_train.ipynb           # TinyLlama LoRA fine-tuning
-│   ├── tinyllama_eval.ipynb            # TinyLlama evaluation
-│   ├── opt_train.ipynb                 # OPT-1.3B LoRA fine-tuning
-│   ├── opt_eval.ipynb                  # OPT-1.3B evaluation
-│   └── zero_vs_few_comparison.csv      # DeepSeek results for cross-model comparison
-└── README.md
-```
-
----
-
 ## Data Pipeline
 
 ### Dataset
@@ -108,9 +84,9 @@ Each model is evaluated both overall and per-category to identify strengths and 
 
 | Metric | DeepSeek Zero-Shot | DeepSeek Few-Shot | TinyLlama + LoRA | OPT-1.3B + LoRA |
 |--------|-------------------|-------------------|------------------|------------------|
-| BLEU | Medium | Higher | Low–Medium | Low |
-| ROUGE-L | Medium | Higher | Low–Medium | Low |
-| BERTScore | High | Higher | Medium | Medium–Low |
+| BLEU | High | High | Low–Medium | Low |
+| ROUGE-L | High | High | Low–Medium | Low |
+| BERTScore | High | High | Medium | Medium–Low |
 
 ### OPT-1.3B + LoRA Metrics (20-sample test set)
 
