@@ -1,7 +1,7 @@
 # Project 3: 
 
 ## Overview
-This project evaluates three different language model approaches for natural language generation (NLG) on the Databricks Dolly dataset. The goal is to compare cloud-based API models, instruction-tuned fine-tuned models, and base model fine-tuning to understand tradeoffs in cost, quality, and compute.
+This project goal is to get an LLM to follow instructions from this data via prompting (zero-shot, few-shot) or by fine-tuning a small model and evaluate how well it does. The dataset has structure and quirks that you are expected to discover and address; your design choices (prompt format, few-shot selection, evaluation) should reflect that.
 
 | Model | Type | Parameters | Environment |
 |-------|------|-----------|-------------|
