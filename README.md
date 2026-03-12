@@ -95,15 +95,14 @@ Each model is evaluated both overall and per-category to identify strengths and 
 
 ### Key Findings
 
-1. **DeepSeek dominates all metrics** — As expected, a ~67B parameter cloud model significantly outperforms 1B-class local models. Few-shot prompting further improves over zero-shot across all metrics.
+1. **DeepSeek dominates all metrics** — As expected, a ~67B parameter cloud model significantly outperforms 1B-class local models.
 
-2. **TinyLlama + LoRA outperforms OPT + LoRA** — Despite similar parameter counts (~1.1B vs ~1.3B), TinyLlama produces better instruction-following outputs. This confirms that **starting from an instruction-tuned base matters more than raw model size**.
+2. **TinyLlama + LoRA** achieves strong results considering its small size.
 
-3. **OPT-1.3B struggles with instruction format** — As a base language model, OPT was never trained to follow instructions. LoRA alone is insufficient to fully bridge this gap. Outputs tend to be more generic, repetitive, or off-topic compared to TinyLlama.
+3. **BERTScore is more forgiving than BLEU** — Semantic similarity (BERTScore) scores are consistently higher than lexical overlap (BLEU), suggesting models capture meaning even when exact wording differs.
 
-4. **BERTScore is more forgiving than BLEU** — Semantic similarity (BERTScore) scores are consistently higher than lexical overlap (BLEU), suggesting models capture meaning even when exact wording differs.
+4. **Few-shot** prompting provides no benefit for already instruction-tuned models on diverse tasks.
 
-5. **Category-level variation is significant** — All models perform better on extractive tasks (closed_qa, information_extraction) than generative tasks (creative_writing, brainstorming), where open-ended responses diverge more from references.
 
 ### Cross-Model Comparison Summary
 
@@ -113,7 +112,14 @@ Each model is evaluated both overall and per-category to identify strengths and 
 | ROUGE-L | Medium | Higher | Low–Medium | Low |
 | BERTScore | High | Higher | Medium | Medium–Low |
 
-> *Exact scores are generated dynamically in `opt_eval.ipynb` and `tinyllama_eval.ipynb`.*
+### OPT-1.3B + LoRA Metrics (20-sample test set)
+
+| Metric    | Value   |
+|-----------|---------|
+| BLEU      | 0.0174  |
+| ROUGE-1   | 0.2597  |
+| ROUGE-2   | 0.0877  |
+| ROUGE-L   | 0.1873  |
 
 ---
 
@@ -148,14 +154,14 @@ Explore model compression (GPTQ, AWQ quantization) and inference optimization (v
 
 ## References
 
-https://www.promptingguide.ai/
-https://huggingface.co/learn/llm-course/en/
-https://www.youtube.com/watch?v=uikZs6y0qgI
-https://arxiv.org/abs/2106.09685
-https://huggingface.co/docs/peft/main/en/conceptual_guides/lora
-https://medium.com/@pur4v/understanding-llm-evaluation-metrics-bleu-rouge-exact-match-and-bertscore-716487e40bdd
-https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
-https://www.deepseek.com/en/
+- https://www.promptingguide.ai/
+- https://huggingface.co/learn/llm-course/en/
+- https://www.youtube.com/watch?v=uikZs6y0qgI
+- https://arxiv.org/abs/2106.09685
+- https://huggingface.co/docs/peft/main/en/conceptual_guides/lora
+- https://medium.com/@pur4v/understanding-llm-evaluation-metrics-bleu-rouge-exact-match-and-bertscore-716487e40bdd
+- https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
+- https://www.deepseek.com/en/
 
 
 

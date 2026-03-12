@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.ipynb_checkpoints/
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Data and model artifacts
+/data/
+*.jsonl
+*.csv
+
+# Model weights and large files
+/model/opt-1.3b-base/
+model/opt-1.3b-base/
+model/opt_model/adapter_model.safetensors
+*.safetensors
+*.bin
+
+# HuggingFace cache
+~/.cache/huggingface/
+C:/Users/*/.cache/huggingface/
+C:/Users/*/.cache/torch/
+.cache/
+huggingface/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Output
+*.zip
+*.tar.gz
+*.tar
+*.tmp
+*.bak
+*.swp
+# ...existing code...
+/model/large/
+/model/last/
+# ...existing code...
