@@ -6,8 +6,8 @@ This project evaluates three different language model approaches for natural lan
 | Model | Type | Parameters | Environment |
 |-------|------|-----------|-------------|
 | DeepSeek-R1 | API (cloud) | ~67B | Cloud API |
-| TinyLlama + LoRA | Local fine-tuned (instruction-tuned base) | 1.1B | Local / Kaggle |
-| OPT-1.3B + LoRA | Local fine-tuned (base model) | 1.3B | Local / Kaggle |
+| TinyLlama + LoRA | Local fine-tuned (instruction-tuned base) | 1.1B | Local |
+| OPT-1.3B + LoRA | Local fine-tuned (base model) | 1.3B | Local  |
 
 ---
 
