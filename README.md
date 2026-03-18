@@ -1,37 +1,13 @@
 # Project 3: 
 
 ## Overview
-This project evaluates three different language model approaches for natural language generation (NLG) on the Databricks Dolly dataset. The goal is to compare cloud-based API models, instruction-tuned fine-tuned models, and base model fine-tuning to understand tradeoffs in cost, quality, and compute.
+This project goal is to get an LLM to follow instructions from this data via prompting (zero-shot, few-shot) or by fine-tuning a small model and evaluate how well it does. The dataset has structure and quirks that you are expected to discover and address; your design choices (prompt format, few-shot selection, evaluation) should reflect that.
 
 | Model | Type | Parameters | Environment |
 |-------|------|-----------|-------------|
 | DeepSeek-R1 | API (cloud) | ~67B | Cloud API |
-| TinyLlama + LoRA | Local fine-tuned (instruction-tuned base) | 1.1B | Local / Kaggle |
-| OPT-1.3B + LoRA | Local fine-tuned (base model) | 1.3B | Local / Kaggle |
-
----
-
-## Project Structure
-```
-Project_3/
-├── data/
-│   ├── clean_dolly_train.json          # Training split (JSONL)
-│   └── clean_dolly_test.json           # Test split (JSONL)
-├── model/
-│   ├── opt_model/                      # OPT-1.3B LoRA adapter
-│   │   ├── adapter_model.safetensors
-│   │   └── adapter_config.json
-│   └── opt-1.3b-base/                 # OPT-1.3B base model (see setup)
-├── notebooks/
-│   ├── data_cleaning.ipynb             # Data preprocessing & cleaning
-│   ├── deepseek_eval.ipynb             # DeepSeek zero-shot & few-shot evaluation
-│   ├── tinyllama_train.ipynb           # TinyLlama LoRA fine-tuning
-│   ├── tinyllama_eval.ipynb            # TinyLlama evaluation
-│   ├── opt_train.ipynb                 # OPT-1.3B LoRA fine-tuning
-│   ├── opt_eval.ipynb                  # OPT-1.3B evaluation
-│   └── zero_vs_few_comparison.csv      # DeepSeek results for cross-model comparison
-└── README.md
-```
+| TinyLlama + LoRA | Local fine-tuned (instruction-tuned base) | 1.1B | Local |
+| OPT-1.3B + LoRA | Local fine-tuned (base model) | 1.3B | Local  |
 
 ---
 
@@ -43,7 +19,7 @@ Project_3/
 - **Categories**: 8 task types — brainstorming, classification, closed_qa, creative_writing, general_qa, information_extraction, open_qa, summarization
 - **Splits**: Train / Test
 
-### Preprocessing (`data_cleaning.ipynb`)
+### Preprocessing (`EDA.ipynb`)
 - Removed duplicates and empty responses
 - Standardized field names and formatting
 - Split into train/val/test sets
@@ -108,9 +84,9 @@ Each model is evaluated both overall and per-category to identify strengths and 
 
 | Metric | DeepSeek Zero-Shot | DeepSeek Few-Shot | TinyLlama + LoRA | OPT-1.3B + LoRA |
 |--------|-------------------|-------------------|------------------|------------------|
-| BLEU | Medium | Higher | Low–Medium | Low |
-| ROUGE-L | Medium | Higher | Low–Medium | Low |
-| BERTScore | High | Higher | Medium | Medium–Low |
+| BLEU | High | High | Low–Medium | Low |
+| ROUGE-L | High | High | Low–Medium | Low |
+| BERTScore | High | High | Medium | Medium–Low |
 
 ### OPT-1.3B + LoRA Metrics (20-sample test set)
 
@@ -122,7 +98,35 @@ Each model is evaluated both overall and per-category to identify strengths and 
 | ROUGE-L   | 0.1873  |
 
 ---
+**LLM-as-Judge Metric:**  
+To avoid self-preference bias, we use **Groq's Llama 3.3 70B** as an independent judge, rather than letting DeepSeek evaluate its own outputs. This prevents model bias and ensures a fair comparison. The LLM judge rates each response from 1 (completely wrong) to 5 (matches or exceeds the reference), providing a human-like assessment of instruction-following quality.
 
+**LLM Judge Results:**  
+- **Zero-Shot LLM Judge:** mean=4.44 (n=80)  
+- **Few-Shot LLM Judge:**  mean=4.35 (n=80)  
+
+**Per-Category LLM Judge Breakdown:**
+
+| Category                | Count | Zero-Shot Judge | Few-Shot Judge |
+|-------------------------|-------|-----------------|---------------|
+| brainstorming           | 10    | 4.3             | 4.2           |
+| classification          | 10    | 5.0             | 5.0           |
+| closed_qa               | 10    | 4.6             | 4.5           |
+| creative_writing        | 10    | 4.0             | 4.1           |
+| general_qa              | 10    | 4.6             | 4.2           |
+| information_extraction  | 10    | 4.2             | 4.0           |
+| open_qa                 | 10    | 4.3             | 4.2           |
+| summarization           | 10    |                 |               |
+
+These results confirm that zero-shot prompting is at least as effective as few-shot for DeepSeek, even when judged by an external LLM.
+
+The independent judge confirms the same pattern found by automatic metrics: zero-shot performs comparably or better than few-shot for DeepSeek. This convergence across **four evaluation methods** (BLEU, ROUGE, BERTScore, and an independent LLM judge) strengthens the conclusion that few-shot prompting provides no benefit for already instruction-tuned models on diverse tasks.
+
+---
+
+**Temperature effect:** Comparing `temperature=0.3` vs `temperature=0.0` shows that lowering temperature to fully deterministic decoding has minimal impact on aggregate metrics. This confirms that DeepSeek's instruction-following quality is robust to small temperature changes, and the zero-shot vs few-shot finding holds regardless of the sampling strategy.
+
+---
 ## Issues Encountered
 
 ### 1. OPT-1.3B Base Model Download Failure (Local)
