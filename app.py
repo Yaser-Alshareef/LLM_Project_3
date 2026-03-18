@@ -15,7 +15,7 @@ load_dotenv()
 
 # ── Page config ──
 st.set_page_config(page_title="Model Comparison Demo", layout="wide")
-st.title("DeepSeek vs LoRA TinyLlama — Live Demo")
+st.title("DeepSeek vs LoRA TinyLlama vs OPT — Live Demo")
 
 # ── Load test data (cached) ──
 @st.cache_data
@@ -43,6 +43,21 @@ def load_lora_model():
 
 with st.spinner("Loading LoRA TinyLlama..."):
     tokenizer, lora_model = load_lora_model()
+
+# ── Load OPT model (cached) ──
+@st.cache_resource
+def load_opt_model():
+    model_id = "facebook/opt-1.3b"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    base = AutoModelForCausalLM.from_pretrained(
+        model_id, device_map="cpu", torch_dtype=torch.float32
+    )
+    model = PeftModel.from_pretrained(base, "model/opt_model")
+    model.eval()
+    return tokenizer, model
+
+with st.spinner("Loading OPT model..."):
+    opt_tokenizer, opt_model = load_opt_model()
 
 # ── DeepSeek client ──
 client = OpenAI(
@@ -85,13 +100,40 @@ def ask_lora(prompt):
     latency = time.time() - start
     return output, latency
 
-def build_prompt(instruction, context=""):
-    prompt = f"Instruction: {instruction}\n"
-    if context:
-        prompt += f"Context: {context}\n"
-    prompt += "Answer:"
-    return prompt
+def ask_opt(prompt):
+    start = time.time()
 
+    inputs = opt_tokenizer(prompt, return_tensors="pt", truncation=True)
+
+    with torch.no_grad():
+        out = opt_model.generate(
+            **inputs,
+            max_new_tokens=150,
+            do_sample=True,
+            temperature=0.7,
+            top_p=0.9,
+            pad_token_id=opt_tokenizer.eos_token_id
+        )
+
+    generated_tokens = out[0][inputs["input_ids"].shape[1]:]
+
+    output = opt_tokenizer.decode(
+        generated_tokens,
+        skip_special_tokens=True
+    ).strip()
+
+    latency = time.time() - start
+    return output, latency
+
+def build_prompt(instruction, context=""):
+    prompt = f"### Instruction:\n{instruction}\n\n"
+
+    if context:
+        prompt += f"### Context:\n{context}\n\n"
+
+    prompt += "### Response:\n"
+
+    return prompt
 # ── Sidebar: input mode ──
 st.sidebar.header("Input")
 mode = st.sidebar.radio("Choose input mode:", ["Random test example", "Custom instruction"])
@@ -130,8 +172,8 @@ if instruction:
 
     prompt = build_prompt(instruction, context)
 
-    if st.button("Run Both Models", type="primary"):
-        col1, col2 = st.columns(2)
+    if st.button("Run All Models", type="primary"):
+        col1, col2, col3 = st.columns(3)
 
         # DeepSeek
         with col1:
@@ -149,6 +191,14 @@ if instruction:
             st.success(f"Latency: {lora_latency:.2f}s | Local")
             st.write(lora_output)
 
+        # OPT Model
+        with col3:
+            st.markdown("#### OPT Model")
+            with st.spinner("Running OPT inference..."):
+                opt_output, opt_latency = ask_opt(prompt)
+            st.success(f"Latency: {opt_latency:.2f}s | Local")
+            st.write(opt_output)
+
         # Evaluation (only if reference exists)
         if reference:
             st.markdown("---")
@@ -161,12 +211,17 @@ if instruction:
                 lora_bs = bertscore.compute(
                     predictions=[lora_output], references=[reference], lang="en"
                 )
+                opt_bs = bertscore.compute(
+                    predictions=[opt_output], references=[reference], lang="en"
+                )
 
-            eval_col1, eval_col2 = st.columns(2)
+            eval_col1, eval_col2, eval_col3 = st.columns(3)
             with eval_col1:
                 st.metric("DeepSeek BERTScore F1", f"{ds_bs['f1'][0]:.4f}")
             with eval_col2:
                 st.metric("LoRA BERTScore F1", f"{lora_bs['f1'][0]:.4f}")
+            with eval_col3:
+                st.metric("OPT BERTScore F1", f"{opt_bs['f1'][0]:.4f}")
         else:
             st.info("No reference answer — showing outputs only (no automatic evaluation).")
 else:
